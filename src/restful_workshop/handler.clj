@@ -9,12 +9,17 @@
 
 (defroutes app-routes
            (GET "/" [] (response {:what "Hello World"}))
-           (POST "/consumer" {body :body} (response {:a body}))
+           (POST "/consumer" request (let [ssn (or (get-in request [:params :ssn])
+                                                   (get-in request [:body :ssn])
+                                                   "00000")]
+                                       {:status 200
+                                        :body   {:name ssn
+                                                 :desc (str "ssn received " ssn)}}))
            (route/not-found "Not Found"))
 
 (def app
   (-> app-routes
-      (middleware/wrap-json-body)
+      (middleware/wrap-json-body {:keywords? true})
       (middleware/wrap-json-response)
       (wrap-defaults api-defaults)
       ))
